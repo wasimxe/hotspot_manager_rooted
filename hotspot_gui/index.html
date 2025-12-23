@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hotspot Manager</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Manage your mobile hotspot, monitor connected devices, and block URLs">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hotspot">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            background: #f7fafc;
+            padding: 12px 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .status-item label {
+            font-size: 12px;
+            color: #718096;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .status-item value {
+            font-size: 16px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .device-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .device-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .device-item:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+        
+        .device-info h3 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .device-info p {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .device-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .url-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .url-item {
+            background: #fff5f5;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #f56565;
+        }
+        
+        .url-item span {
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .mac-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-bottom: 1px solid transparent;
+        }
+
+        .mac-link:hover {
+            color: #5a67d8;
+            border-bottom: 1px solid #5a67d8;
+        }
+
+        .device-details {
+            color: #718096;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .vendor-badge {
+            display: inline-block;
+            background: #e6fffa;
+            color: #234e52;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .state-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .state-reachable {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .state-stale {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .state-delay {
+            background: #fed7e2;
+            color: #702459;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group small {
+            display: block;
+            color: #718096;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-edit:hover {
+            background: #5a67d8;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #48bb78;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Monitor Table */
+        .usage-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: #f7fafc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .usage-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .usage-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .usage-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .usage-table tbody tr {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .usage-table tbody tr:hover {
+            background: #edf2f7;
+            transform: scale(1.01);
+        }
+
+        .usage-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .protocol-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .protocol-tcp {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .protocol-udp {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .protocol-icmp {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        @media (max-width: 768px) {
+            .device-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .device-actions {
+                width: 100%;
+            }
+
+            .device-actions button {
+                flex: 1;
+            }
+
+            .usage-table {
+                font-size: 12px;
+            }
+
+            .usage-table th,
+            .usage-table td {
+                padding: 8px;
+            }
+        }
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #718096;
+            font-size: 12px;
+        }
+
+        .modal-actions {
+            text-align: right;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin-bottom: 15px;">🔥 Hotspot Manager</h1>
+            <div class="status" style="gap: 8px;">
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 10px;">Status</label>
+                    <value id="hotspot-status" style="font-size: 13px;">...</value>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 10px;">Devices</label>
+                    <value id="device-count" style="font-size: 13px;">0</value>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 10px;">Blocked</label>
+                    <value id="blocked-count" style="font-size: 13px;">0</value>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 10px;">Interface</label>
+                    <value id="interface" style="font-size: 13px;">N/A</value>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 9px;" title="Channels 1,6,11 = best">Ch ⓘ</label>
+                    <select id="wifi-channel" onchange="setWiFiChannel(this.value)" title="Use 1, 6, or 11" style="width: 100%; padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid #ddd; background: white; cursor: pointer;">
+                        <option>...</option>
+                    </select>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 9px;" title="Higher = more range">TX ⓘ</label>
+                    <select id="tx-power" onchange="setTxPower(this.value)" title="Higher = longer range" style="width: 100%; padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid #ddd; background: white; cursor: pointer;">
+                        <option>...</option>
+                    </select>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0; padding: 0; margin: 0;">
+                    <button class="btn btn-success" onclick="boostInternet()" style="width: 100%; height: 100%; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; background: linear-gradient(135deg, #48bb78, #38a169);">
+                        <small style="font-size: 9px; margin-bottom: 2px;">Boost</small>
+                        <span style="font-size: 18px;">⚡</span>
+                    </button>
+                </div>
+                <div class="status-item" style="flex: 1; min-width: 0; padding: 0; margin: 0;">
+                    <button class="btn btn-danger" onclick="restartServer()" style="width: 100%; height: 100%; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
+                        <small style="font-size: 9px; margin-bottom: 2px;">Restart</small>
+                        <span style="font-size: 18px;">🔄</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('devices')">Connected Devices</button>
+            <button class="tab-btn" onclick="switchTab('urls')">URL Blocking</button>
+            <button class="tab-btn" onclick="switchTab('usage')">Data Usage</button>
+        </div>
+        
+        <!-- Devices Tab -->
+        <div id="devices-tab" class="tab-content active">
+            <div class="card">
+                <h2>Connected Devices</h2>
+                <div id="devices-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading devices...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- URLs Tab -->
+        <div id="urls-tab" class="tab-content">
+            <div class="card">
+                <h2>Block URLs/Domains</h2>
+                <div class="input-group">
+                    <input type="text" id="url-input" placeholder="Enter domain to block (e.g., facebook.com)">
+                    <button class="btn btn-danger" onclick="blockURL()">Block</button>
+                    <button class="btn btn-primary" onclick="showAdvancedBlock()">Advanced +</button>
+                </div>
+                <div id="urls-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading blocked URLs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Usage Tab -->
+        <div id="usage-tab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">📊 Monthly Data Usage</h2>
+                    <button class="btn btn-danger" onclick="resetAllUsage()" style="padding: 8px 16px;">Reset All Usage</button>
+                </div>
+
+                <div id="usage-month" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0; color: white; font-size: 18px;">📅 Current Month: <span id="current-month" style="font-weight: 700;">Loading...</span></h3>
+                    <h3 style="margin: 0; color: white; font-size: 18px;">📊 Total Usage: <span id="total-usage" style="font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px;">0 B</span></h3>
+                </div>
+
+                <div id="usage-container">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 60px; height: 60px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h3>Loading data usage...</h3>
+                        <p>Calculating data usage for connected devices.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <script>
+        let refreshInterval;
+        let monitorInterval;
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            // Clear all intervals
+            clearInterval(refreshInterval);
+            clearInterval(monitorInterval);
+
+            if (tab === 'devices') {
+                loadDevices();
+                refreshInterval = setInterval(loadDevices, 5000);
+            } else if (tab === 'urls') {
+                loadBlockedURLs();
+            } else if (tab === 'usage') {
+                loadDataUsage();
+            }
+        }
+        
+        // Load connected devices
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const data = await response.json();
+                
+                const container = document.getElementById('devices-container');
+                document.getElementById('device-count').textContent = data.devices.length;
+                document.getElementById('interface').textContent = data.interface || 'N/A';
+                document.getElementById('hotspot-status').textContent = data.devices.length > 0 ? 'Active' : 'No Clients';
+                
+                if (data.devices.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <h3>No devices connected</h3>
+                            <p>Enable your hotspot and connect devices to see them here.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="device-list">' +
+                        data.devices.map(device => `
+                            <div class="device-item">
+                                <div class="device-info">
+                                    <h3>${device.hostname || 'Unknown Device'}</h3>
+                                    <p>IP: ${device.ip} • MAC: <a href="https://maclookup.app/search/result?mac=${device.mac}" target="_blank" class="mac-link">${device.mac}</a></p>
+                                    <div class="device-details">
+                                        <span class="vendor-badge">${device.vendor || 'Unknown'}</span>
+                                        <span class="state-badge state-${device.state ? device.state.toLowerCase() : 'unknown'}">${device.state || 'Unknown'}</span>
+                                        ${device.connections ? `• ${device.connections} connections` : ''}
+                                    </div>
+                                    ${device.notes ? `<p style="margin-top: 8px; color: #718096; font-size: 14px; font-style: italic;">📝 ${device.notes}</p>` : ''}
+                                </div>
+                                <div class="device-actions">
+                                    <button class="btn btn-edit" onclick="editDevice('${device.mac}', '${(device.custom_name || '').replace(/'/g, "\\'")}', '${(device.notes || '').replace(/'/g, "\\'")}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="blockDevice('${device.mac}', '${device.ip}')">Block</button>
+                                </div>
+                            </div>
+                        `).join('') +
+                    '</div>';
+                }
+            } catch (error) {
+                document.getElementById('devices-container').innerHTML = `
+                    <div class="alert alert-error">Error loading devices: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // Load blocked URLs
+        async function loadBlockedURLs() {
+            try {
+                const response = await fetch('/api/blocked-urls');
+                const data = await response.json();
+
+                const container = document.getElementById('urls-container');
+                const blockedUrls = data.blocked_urls || [];
+                document.getElementById('blocked-count').textContent = blockedUrls.length;
+
+                if (blockedUrls.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            </svg>
+                            <h3>No blocked URLs</h3>
+                            <p>Add domains above to block them for all hotspot users.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="url-list">' +
+                        blockedUrls.map(item => {
+                            const ipsHtml = item.ips && item.ips.length > 0
+                                ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                     <strong>Blocked IPs:</strong> ${item.ips.join(', ')}
+                                   </div>`
+                                : '<div style="font-size: 12px; color: #999; margin-top: 5px;">DNS-only blocking</div>';
+
+                            const ipRanges = item.ip_ranges || item.ips || [];
+                            const ipDisplay = ipRanges.length > 0
+                                ? `<div style="font-size: 12px; color: #718096; margin-top: 5px;">📍 ${ipRanges.length} IP range${ipRanges.length > 1 ? 's' : ''}: ${ipRanges.slice(0, 2).join(', ')}${ipRanges.length > 2 ? ` +${ipRanges.length - 2} more` : ''}</div>`
+                                : '<div style="font-size: 12px; color: #999; margin-top: 5px;">Auto-resolved IPs</div>';
+
+                            return `
+                                <div class="url-item">
+                                    <div>
+                                        <div><strong>${item.url}</strong></div>
+                                        ${ipDisplay}
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-primary" onclick="showEditBlock('${item.url}')">✏️ Edit</button>
+                                        <button class="btn btn-success" onclick="unblockURL('${item.url}')">Unblock</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') +
+                    '</div>';
+                }
+            } catch (error) {
+                document.getElementById('urls-container').innerHTML = `
+                    <div class="alert alert-error">Error loading URLs: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // Block URL
+        async function blockURL() {
+            const input = document.getElementById('url-input');
+            const url = input.value.trim();
+            
+            if (!url) {
+                alert('Please enter a domain to block');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/block-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    input.value = '';
+                    loadBlockedURLs();
+                    showAlert('success', `Successfully blocked ${url}`);
+                } else {
+                    showAlert('error', data.message || 'Failed to block URL');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+        
+        // Unblock URL
+        async function unblockURL(url) {
+            try {
+                const response = await fetch('/api/unblock-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadBlockedURLs();
+                    showAlert('success', `Successfully unblocked ${url}`);
+                } else {
+                    showAlert('error', data.message || 'Failed to unblock URL');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+        
+        // Advanced Block - Show Modal
+        function showAdvancedBlock() {
+            document.getElementById('advanced-block-modal').style.display = 'flex';
+            document.getElementById('adv-domain').value = '';
+            document.getElementById('adv-ip-ranges').value = '';
+        }
+
+        function closeAdvancedBlockModal() {
+            document.getElementById('advanced-block-modal').style.display = 'none';
+        }
+
+        // Submit Advanced Block
+        async function submitAdvancedBlock(event) {
+            event.preventDefault();
+
+            const domain = document.getElementById('adv-domain').value.trim();
+            const ipRangesText = document.getElementById('adv-ip-ranges').value.trim();
+
+            // Parse IP ranges (one per line)
+            const ipRanges = ipRangesText
+                ? ipRangesText.split('\n').map(ip => ip.trim()).filter(ip => ip)
+                : [];
+
+            try {
+                const response = await fetch('/api/block-url-advanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: domain, ip_ranges: ipRanges })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeAdvancedBlockModal();
+                    loadBlockedURLs();
+                    showAlert('success', `Successfully blocked ${domain} with ${ipRanges.length || 'auto-resolved'} IP ranges`);
+                } else {
+                    showAlert('error', data.message || 'Failed to block domain');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+
+        // Edit Block - Show Modal
+        async function showEditBlock(domain) {
+            document.getElementById('edit-domain-name').value = domain;
+            document.getElementById('edit-domain-display').value = domain;
+
+            // Load current IP ranges
+            try {
+                const response = await fetch('/api/get-blocked-url?url=' + encodeURIComponent(domain));
+                const data = await response.json();
+
+                if (data.success && data.ip_ranges) {
+                    document.getElementById('edit-ip-ranges').value = data.ip_ranges.join('\n');
+                }
+            } catch (error) {
+                console.error('Error loading IP ranges:', error);
+            }
+
+            document.getElementById('edit-block-modal').style.display = 'flex';
+        }
+
+        function closeEditBlockModal() {
+            document.getElementById('edit-block-modal').style.display = 'none';
+        }
+
+        // Submit Edit Block
+        async function submitEditBlock(event) {
+            event.preventDefault();
+
+            const domain = document.getElementById('edit-domain-name').value;
+            const ipRangesText = document.getElementById('edit-ip-ranges').value.trim();
+
+            // Parse IP ranges
+            const ipRanges = ipRangesText.split('\n').map(ip => ip.trim()).filter(ip => ip);
+
+            try {
+                const response = await fetch('/api/update-blocked-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: domain, ip_ranges: ipRanges })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeEditBlockModal();
+                    loadBlockedURLs();
+                    showAlert('success', `Successfully updated ${domain}`);
+                } else {
+                    showAlert('error', data.message || 'Failed to update domain');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+
+        // Block device
+        async function blockDevice(mac, ip) {
+            if (!confirm(`Block device ${ip}?`)) return;
+
+            try {
+                const response = await fetch('/api/block-device', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mac, ip })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadDevices();
+                    showAlert('success', `Blocked device ${ip}`);
+                } else {
+                    showAlert('error', data.message || 'Failed to block device');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+
+        // Edit device information
+        function editDevice(mac, name, notes) {
+            document.getElementById('device-mac').value = mac;
+            document.getElementById('device-name').value = name;
+            document.getElementById('device-notes').value = notes;
+
+            const modal = document.getElementById('edit-device-modal');
+            modal.classList.add('active');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            const modal = document.getElementById('edit-device-modal');
+            modal.classList.remove('active');
+        }
+
+        // Wait for DOM to be ready before attaching event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle edit form submission
+            const editForm = document.getElementById('edit-device-form');
+            if (editForm) {
+                editForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const mac = document.getElementById('device-mac').value;
+                    const name = document.getElementById('device-name').value;
+                    const notes = document.getElementById('device-notes').value;
+
+                    try {
+                        const response = await fetch('/api/save-device-info', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mac, name, notes })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            closeEditModal();
+                            loadDevices();
+                            showAlert('success', 'Device information saved!');
+                        } else {
+                            showAlert('error', data.message || 'Failed to save device info');
+                        }
+                    } catch (error) {
+                        showAlert('error', `Error: ${error.message}`);
+                    }
+                });
+            }
+
+            // Close modal when clicking outside
+            const editModal = document.getElementById('edit-device-modal');
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeEditModal();
+                    }
+                });
+            }
+        });
+
+        // Show alert
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const activeTab = document.querySelector('.tab-content.active .card');
+            activeTab.insertBefore(alertDiv, activeTab.firstChild);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+        
+        // Initial load
+        loadDevices();
+        loadWiFiSettings();
+        refreshInterval = setInterval(loadDevices, 5000);
+        
+        // Handle enter key on URL input
+        const urlInput = document.getElementById('url-input');
+        if (urlInput) {
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') blockURL();
+            });
+        }
+
+        // =====================================================
+        // PWA Service Worker Registration
+        // =====================================================
+        let deferredPrompt;
+        let installButton;
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Handle PWA install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the default browser install prompt
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show custom install button
+            showInstallPromotion();
+        });
+
+        // Show install promotion
+        function showInstallPromotion() {
+            const installPromo = document.createElement('div');
+            installPromo.id = 'install-promo';
+            installPromo.innerHTML = `
+                <div style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; max-width: 300px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 24px;">📱</span>
+                        <div>
+                            <strong style="display: block; color: #2d3748;">Install Hotspot Manager</strong>
+                            <small style="color: #718096;">Add to your home screen</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="installPWA()" class="btn btn-primary" style="flex: 1; padding: 8px;">Install</button>
+                        <button onclick="dismissInstallPromo()" class="btn" style="flex: 1; padding: 8px; background: #e2e8f0; color: #2d3748;">Later</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(installPromo);
+        }
+
+        // Install PWA
+        async function installPWA() {
+            if (!deferredPrompt) return;
+
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+
+            if (outcome === 'accepted') {
+                console.log('PWA installed');
+            }
+
+            deferredPrompt = null;
+            dismissInstallPromo();
+        }
+
+        // Dismiss install promo
+        function dismissInstallPromo() {
+            const promo = document.getElementById('install-promo');
+            if (promo) promo.remove();
+        }
+
+        // Handle app installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA installed successfully');
+            dismissInstallPromo();
+        });
+
+        // Listen for service worker messages
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data.type === 'DEVICES_UPDATED') {
+                    // Refresh devices display
+                    loadDevices();
+                }
+            });
+        }
+
+        // =====================================================
+        // Data Usageing Functions
+        // =====================================================
+
+        // Load monitoring status
+        async function loadMonitorStatus() {
+            try {
+                const response = await fetch('/api/monitor-status');
+                const data = await response.json();
+
+                const toggle = document.getElementById('monitor-toggle');
+                const status = document.getElementById('monitor-status');
+
+                toggle.checked = data.enabled;
+
+                if (data.enabled) {
+                    status.style.display = 'none';
+                    // Start auto-refresh if enabled
+                    monitorInterval = setInterval(loadMonitorLogs, 3000);
+                } else {
+                    status.style.display = 'block';
+                    status.className = 'alert alert-error';
+                    status.textContent = 'Monitoring is disabled';
+                    clearInterval(monitorInterval);
+                }
+            } catch (error) {
+                console.error('Error loading monitor status:', error);
+            }
+        }
+
+        // Toggle monitoring on/off
+        async function toggleMonitoring() {
+            const toggle = document.getElementById('monitor-toggle');
+            const enabled = toggle.checked;
+            const status = document.getElementById('monitor-status');
+
+            try {
+                const response = await fetch('/api/monitor-toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (enabled) {
+                        status.style.display = 'block';
+                        status.className = 'alert alert-success';
+                        status.textContent = 'Live monitoring enabled - tracking all hotspot traffic';
+                        // Start auto-refresh
+                        loadMonitorLogs();
+                        monitorInterval = setInterval(loadMonitorLogs, 3000);
+                    } else {
+                        status.style.display = 'block';
+                        status.className = 'alert alert-error';
+                        status.textContent = 'Monitoring disabled';
+                        clearInterval(monitorInterval);
+                    }
+                } else {
+                    showAlert('error', data.message || 'Failed to toggle monitoring');
+                    toggle.checked = !enabled; // Revert toggle
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+                toggle.checked = !enabled; // Revert toggle
+            }
+        }
+
+        // Global variables for monitoring
+        let lastFilterData = null;
+        let currentPage = 1;
+        let perPage = 50;
+
+        // Load monitoring logs with filters
+        async function loadMonitorLogs() {
+            try {
+                // Build query string from filters
+                const params = new URLSearchParams();
+
+                const filterIp = document.getElementById('filter-ip')?.value;
+                const filterProtocol = document.getElementById('filter-protocol')?.value;
+                const filterType = document.getElementById('filter-type')?.value;
+                const filterSearch = document.getElementById('filter-search')?.value;
+                const filterUrl = document.getElementById('filter-url')?.value;
+                const filterBlocked = document.getElementById('filter-blocked')?.checked;
+
+                if (filterIp) params.append('ip', filterIp);
+                if (filterProtocol) params.append('protocol', filterProtocol);
+                if (filterType) params.append('type', filterType);
+                if (filterSearch) params.append('search', filterSearch);
+                if (filterUrl) params.append('url', filterUrl);
+                if (filterBlocked) params.append('blocked', 'true');
+
+                // Add pagination parameters
+                params.append('page', currentPage);
+                params.append('per_page', perPage);
+
+                const response = await fetch('/api/monitor-logs?' + params.toString());
+                const data = await response.json();
+
+                lastFilterData = data;
+
+                // Update filter dropdowns
+                updateFilterDropdowns(data.filters);
+
+                // Update stats
+                updateMonitorStats(data);
+
+                const container = document.getElementById('monitor-container');
+
+                if (!data.logs || data.logs.length === 0) {
+                    const toggle = document.getElementById('monitor-toggle');
+                    if (toggle.checked) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 60px; height: 60px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3>Waiting for traffic...</h3>
+                                <p>Network requests will appear here in real-time.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    let html = `
+                        <div style="margin-bottom: 10px; color: #718096; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Showing ${data.filtered} of ${data.total} requests</span>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <span style="font-size: 12px;">Sort by:</span>
+                                <select id="sort-select" onchange="sortLogs(this.value)" style="padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px;">
+                                    <option value="timestamp-desc">Time (Newest)</option>
+                                    <option value="timestamp-asc">Time (Oldest)</option>
+                                    <option value="src_ip-asc">Source IP (A-Z)</option>
+                                    <option value="dst_ip-asc">Destination IP (A-Z)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="overflow-x: auto;">
+                        <table class="usage-table">
+                            <thead>
+                                <tr>
+                                    <th style="cursor: pointer;" onclick="sortLogs('timestamp')">⏰ Time</th>
+                                    <th style="cursor: pointer;" onclick="sortLogs('src_ip')">📱 Source IP</th>
+                                    <th style="cursor: pointer;" onclick="sortLogs('dst_ip')">🌐 Destination</th>
+                                    <th>📡 Protocol</th>
+                                    <th>🔌 Port</th>
+                                    <th>🏷️ Type</th>
+                                    <th>🌍 Domain</th>
+                                    <th>🔗 URL/Path</th>
+                                    <th>🚦 Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.logs.forEach(log => {
+                        const protocolClass = log.protocol.toLowerCase().includes('tcp') ? 'protocol-tcp' :
+                                             log.protocol.toLowerCase().includes('udp') ? 'protocol-udp' :
+                                             'protocol-icmp';
+
+                        const typeIcons = {
+                            'dns': '🔍 DNS',
+                            'http': '🌐 HTTP',
+                            'https': '🔒 HTTPS',
+                            'connection': '🔗 TCP'
+                        };
+
+                        const typeDisplay = typeIcons[log.request_type] || log.request_type;
+                        const blocked = log.blocked ? '<span style="color: #f56565; font-weight: 600;">❌ BLOCKED</span>' : '<span style="color: #48bb78;">✓ Allowed</span>';
+
+                        const domain = log.domain !== 'N/A' ? log.domain : '-';
+                        const urlPath = log.url !== 'N/A' ? log.url : (log.full_url || '-');
+
+                        html += `
+                            <tr style="${log.blocked ? 'background: #fff5f5;' : ''} cursor: pointer;" onclick="viewRequestDetails(${log.id})" title="Click to view full details">
+                                <td style="white-space: nowrap; font-size: 12px;">${log.time_str || 'N/A'}</td>
+                                <td><strong style="color: #667eea;">${log.src_ip}</strong></td>
+                                <td>${log.dst_ip}</td>
+                                <td><span class="protocol-badge ${protocolClass}">${log.protocol}</span></td>
+                                <td>${log.port}</td>
+                                <td style="white-space: nowrap;">${typeDisplay}</td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${domain}">${domain}</td>
+                                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${urlPath}">${urlPath}</td>
+                                <td>${blocked}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += '</tbody></table></div>';
+
+                    // Add pagination controls
+                    if (data.total_pages > 1) {
+                        html += '<div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; padding: 15px; background: #f7fafc; border-radius: 8px;">';
+                        html += `<button class="btn btn-secondary" onclick="changePage(1)" ${data.page === 1 ? 'disabled' : ''} style="padding: 8px 12px;">« First</button>`;
+                        html += `<button class="btn btn-secondary" onclick="changePage(${data.page - 1})" ${data.page === 1 ? 'disabled' : ''} style="padding: 8px 12px;">‹ Previous</button>`;
+                        html += `<span style="padding: 8px 16px; background: white; border-radius: 6px; font-weight: 600;">Page ${data.page} of ${data.total_pages}</span>`;
+                        html += `<button class="btn btn-secondary" onclick="changePage(${data.page + 1})" ${data.page >= data.total_pages ? 'disabled' : ''} style="padding: 8px 12px;">Next ›</button>`;
+                        html += `<button class="btn btn-secondary" onclick="changePage(${data.total_pages})" ${data.page >= data.total_pages ? 'disabled' : ''} style="padding: 8px 12px;">Last »</button>`;
+                        html += '</div>';
+                    }
+
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading monitor logs:', error);
+            }
+        }
+
+        // Update filter dropdowns
+        function updateFilterDropdowns(filters) {
+            if (!filters) return;
+
+            // Update IP dropdown
+            const ipSelect = document.getElementById('filter-ip');
+            const currentIp = ipSelect.value;
+            ipSelect.innerHTML = '<option value="">All IPs</option>';
+            filters.ips.forEach(ip => {
+                const option = document.createElement('option');
+                option.value = ip;
+                option.textContent = ip;
+                if (ip === currentIp) option.selected = true;
+                ipSelect.appendChild(option);
+            });
+
+            // Update Protocol dropdown
+            const protocolSelect = document.getElementById('filter-protocol');
+            const currentProtocol = protocolSelect.value;
+            protocolSelect.innerHTML = '<option value="">All Protocols</option>';
+            filters.protocols.forEach(protocol => {
+                const option = document.createElement('option');
+                option.value = protocol;
+                option.textContent = protocol;
+                if (protocol === currentProtocol) option.selected = true;
+                protocolSelect.appendChild(option);
+            });
+
+            // Update Type dropdown
+            const typeSelect = document.getElementById('filter-type');
+            const currentType = typeSelect.value;
+            typeSelect.innerHTML = '<option value="">All Types</option>';
+            filters.types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                const typeNames = {
+                    'dns': '🔍 DNS Queries',
+                    'http': '🌐 HTTP Requests',
+                    'https': '🔒 HTTPS Requests',
+                    'connection': '🔗 TCP Connections'
+                };
+                option.textContent = typeNames[type] || type;
+                if (type === currentType) option.selected = true;
+                typeSelect.appendChild(option);
+            });
+        }
+
+        // Update monitoring statistics
+        function updateMonitorStats(data) {
+            const statsContainer = document.getElementById('monitor-stats');
+
+            // Calculate stats
+            const totalRequests = data.total || 0;
+            const blockedCount = data.logs.filter(log => log.blocked).length;
+            const dnsCount = data.logs.filter(log => log.request_type === 'dns').length;
+            const httpCount = data.logs.filter(log => log.request_type === 'http').length;
+            const httpsCount = data.logs.filter(log => log.request_type === 'https').length;
+
+            statsContainer.innerHTML = `
+                <div style="background: #e6fffa; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: 600; color: #234e52;">${totalRequests}</div>
+                    <div style="font-size: 12px; color: #234e52;">Total Requests</div>
+                </div>
+                <div style="background: #fed7d7; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: 600; color: #742a2a;">${blockedCount}</div>
+                    <div style="font-size: 12px; color: #742a2a;">Blocked</div>
+                </div>
+                <div style="background: #feebc8; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: 600; color: #7c2d12;">${dnsCount}</div>
+                    <div style="font-size: 12px; color: #7c2d12;">DNS Queries</div>
+                </div>
+                <div style="background: #bee3f8; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: 600; color: #2c5282;">${httpCount}</div>
+                    <div style="font-size: 12px; color: #2c5282;">HTTP</div>
+                </div>
+                <div style="background: #c6f6d5; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: 600; color: #22543d;">${httpsCount}</div>
+                    <div style="font-size: 12px; color: #22543d;">HTTPS</div>
+                </div>
+            `;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            currentPage = 1; // Reset to first page when filters change
+            loadMonitorLogs();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-ip').value = '';
+            document.getElementById('filter-protocol').value = '';
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-url').value = '';
+            document.getElementById('filter-blocked').checked = false;
+            currentPage = 1;
+            loadMonitorLogs();
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadMonitorLogs();
+        }
+
+        // View request details in modal
+        async function viewRequestDetails(requestId) {
+            try {
+                // Find request in lastFilterData
+                let request = null;
+                if (lastFilterData && lastFilterData.logs) {
+                    request = lastFilterData.logs.find(log => log.id === requestId);
+                }
+
+                if (!request) {
+                    // Fetch from server if not in current page
+                    const response = await fetch(`/api/request-details/${requestId}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        request = data.request;
+                    }
+                }
+
+                if (!request) {
+                    alert('Request details not found');
+                    return;
+                }
+
+                // Build details HTML
+                let detailsHTML = `
+                    <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="margin: 0 0 10px 0; color: #2d3748;">📊 Request Overview</h3>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px; font-size: 14px;">
+                            <strong>Timestamp:</strong><span>${request.time_str}</span>
+                            <strong>Source IP:</strong><span style="color: #667eea; font-weight: 600;">${request.src_ip}</span>
+                            <strong>Destination IP:</strong><span>${request.dst_ip}</span>
+                            <strong>Protocol:</strong><span>${request.protocol}</span>
+                            <strong>Port:</strong><span>${request.port}</span>
+                            <strong>Type:</strong><span>${request.request_type.toUpperCase()}</span>
+                            <strong>Status:</strong><span>${request.blocked ? '<span style="color: #f56565;">❌ BLOCKED</span>' : '<span style="color: #48bb78;">✓ Allowed</span>'}</span>
+                        </div>
+                    </div>
+                `;
+
+                // HTTP/HTTPS specific details
+                if (request.request_type === 'http' || request.request_type === 'https') {
+                    detailsHTML += `
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e2e8f0;">
+                            <h3 style="margin: 0 0 10px 0; color: #2d3748;">🌐 URL Information</h3>
+                            <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px; font-size: 14px;">
+                                <strong>Full URL:</strong><span style="color: #667eea; word-break: break-all;">${request.full_url || 'N/A'}</span>
+                                <strong>Domain:</strong><span>${request.domain || 'N/A'}</span>
+                                <strong>Path:</strong><span>${request.url || 'N/A'}</span>
+                                <strong>Method:</strong><span style="font-weight: 600;">${request.method || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // HTTP Headers
+                if (request.request_headers) {
+                    detailsHTML += `
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e2e8f0;">
+                            <h3 style="margin: 0 0 10px 0; color: #2d3748;">📄 Request Headers</h3>
+                            <pre style="background: #1a202c; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 0;">${request.request_headers}</pre>
+                        </div>
+                    `;
+                }
+
+                // Request Body
+                if (request.request_body) {
+                    detailsHTML += `
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e2e8f0;">
+                            <h3 style="margin: 0 0 10px 0; color: #2d3748;">📦 Request Body</h3>
+                            <pre style="background: #1a202c; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 0;">${request.request_body || 'Empty'}</pre>
+                        </div>
+                    `;
+                }
+
+                // HTTPS/TLS specific
+                if (request.tls_sni) {
+                    detailsHTML += `
+                        <div style="background: #e6fffa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #81e6d9;">
+                            <h3 style="margin: 0 0 10px 0; color: #234e52;">🔒 TLS Information</h3>
+                            <div style="font-size: 14px;">
+                                <strong>Server Name Indication (SNI):</strong> ${request.tls_sni}
+                            </div>
+                            <div style="margin-top: 10px; font-size: 13px; color: #234e52;">
+                                ℹ️ HTTPS traffic is encrypted. Only connection metadata and SNI are visible.
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // DNS specific
+                if (request.request_type === 'dns') {
+                    detailsHTML += `
+                        <div style="background: #feebc8; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #f6ad55;">
+                            <h3 style="margin: 0 0 10px 0; color: #7c2d12;">🔍 DNS Query</h3>
+                            <div style="font-size: 14px;">
+                                <strong>Queried Domain:</strong> ${request.domain}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Show modal
+                document.getElementById('request-details-content').innerHTML = detailsHTML;
+                document.getElementById('request-details-modal').classList.add('active');
+
+            } catch (error) {
+                console.error('Error loading request details:', error);
+                alert('Failed to load request details');
+            }
+        }
+
+        // Close request details modal
+        function closeRequestDetailsModal() {
+            document.getElementById('request-details-modal').classList.remove('active');
+        }
+
+        // Sort logs
+        function sortLogs(sortBy) {
+            if (sortBy.includes('-')) {
+                const [field, order] = sortBy.split('-');
+                // In real implementation, we'd call the API with sort parameters
+                // For now, just reload
+                loadMonitorLogs();
+            }
+        }
+
+        // Export logs to CSV
+        function exportLogs() {
+            if (!lastFilterData || !lastFilterData.logs || lastFilterData.logs.length === 0) {
+                alert('No logs to export');
+                return;
+            }
+
+            // Create CSV content
+            const headers = ['Time', 'Source IP', 'Destination IP', 'Protocol', 'Port', 'Type', 'Domain', 'URL', 'Method', 'Status Code', 'Blocked'];
+            const rows = lastFilterData.logs.map(log => [
+                log.time_str,
+                log.src_ip,
+                log.dst_ip,
+                log.protocol,
+                log.port,
+                log.request_type,
+                log.domain,
+                log.url,
+                log.method,
+                log.status_code,
+                log.blocked ? 'Yes' : 'No'
+            ]);
+
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            // Download CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', `hotspot_monitor_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showAlert('success', `Exported ${lastFilterData.logs.length} logs to CSV`);
+        }
+
+        // Clear monitoring logs
+        async function clearLogs() {
+            try {
+                const response = await fetch('/api/monitor-clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadMonitorLogs();
+                    showAlert('success', 'Logs cleared');
+                } else {
+                    showAlert('error', data.message || 'Failed to clear logs');
+                }
+            } catch (error) {
+                showAlert('error', `Error: ${error.message}`);
+            }
+        }
+
+        // Restart server
+        async function restartServer() {
+            if (!confirm('Restart the server? This will reload all configurations and blocked URLs.')) {
+                return;
+            }
+
+            // Show loading state
+            const restartBtn = event.target;
+            const originalHTML = restartBtn.innerHTML;
+            restartBtn.disabled = true;
+            restartBtn.innerHTML = '⏳ Restarting...';
+            restartBtn.style.opacity = '0.6';
+
+            // Show status message
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'alert alert-success';
+            statusDiv.style.position = 'fixed';
+            statusDiv.style.top = '20px';
+            statusDiv.style.right = '20px';
+            statusDiv.style.zIndex = '9999';
+            statusDiv.style.minWidth = '300px';
+            statusDiv.innerHTML = '⏳ Restarting server...';
+            document.body.appendChild(statusDiv);
+
+            try {
+                const response = await fetch('/api/restart-server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                statusDiv.innerHTML = '✓ Server restarting... Page will reload in 3 seconds';
+            } catch (error) {
+                // Expected - server is restarting
+                statusDiv.innerHTML = '✓ Server restarting... Page will reload in 3 seconds';
+            }
+
+            // Wait and check if server is back
+            let attempts = 0;
+            const checkServer = setInterval(async () => {
+                attempts++;
+                try {
+                    const testResponse = await fetch('/api/devices', { method: 'GET' });
+                    if (testResponse.ok) {
+                        clearInterval(checkServer);
+                        statusDiv.className = 'alert alert-success';
+                        statusDiv.innerHTML = '✓ Server restarted successfully! Reloading page...';
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    }
+                } catch (e) {
+                    if (attempts > 10) {
+                        clearInterval(checkServer);
+                        statusDiv.className = 'alert alert-error';
+                        statusDiv.innerHTML = '✗ Server restart failed. Please refresh manually.';
+                        restartBtn.disabled = false;
+                        restartBtn.innerHTML = originalHTML;
+                        restartBtn.style.opacity = '1';
+                    } else {
+                        statusDiv.innerHTML = `⏳ Waiting for server... (${attempts}/10)`;
+                    }
+                }
+            }, 1000);
+        }
+
+        // WiFi Settings Functions
+        async function loadWiFiSettings() {
+            try {
+                const response = await fetch('/api/wifi-settings');
+                const data = await response.json();
+                if (data.success) {
+                    // Populate channel select
+                    const channelSelect = document.getElementById('wifi-channel');
+                    channelSelect.innerHTML = data.available_channels.map(ch =>
+                        `<option value="${ch}" ${ch === data.channel ? 'selected' : ''}>Ch ${ch}</option>`
+                    ).join('');
+
+                    // Populate TX power select
+                    const powerSelect = document.getElementById('tx-power');
+                    powerSelect.innerHTML = data.available_powers.map(pwr =>
+                        `<option value="${pwr}" ${pwr === data.tx_power ? 'selected' : ''}>${pwr} dBm</option>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Error loading WiFi settings:', error);
+            }
+        }
+
+        async function setWiFiChannel(channel) {
+            if (!confirm(`Change WiFi channel to ${channel}? You'll need to restart hotspot manually.`)) {
+                loadWiFiSettings(); // Reset select to current value
+                return;
+            }
+            try {
+                const response = await fetch('/api/set-channel', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({channel: parseInt(channel)})
+                });
+                const data = await response.json();
+                showAlert(data.success ? 'success' : 'error', data.message);
+            } catch (error) {
+                showAlert('error', 'Error setting channel: ' + error.message);
+            }
+        }
+
+        async function setTxPower(power) {
+            if (!confirm(`Set TX power to ${power} dBm? You'll need to restart hotspot manually.`)) {
+                loadWiFiSettings(); // Reset select to current value
+                return;
+            }
+            try {
+                const response = await fetch('/api/set-txpower', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({power: parseInt(power)})
+                });
+                const data = await response.json();
+                showAlert(data.success ? 'success' : 'error', data.message);
+            } catch (error) {
+                showAlert('error', 'Error setting TX power: ' + error.message);
+            }
+        }
+
+        // Internet Booster/Fixer
+        async function boostInternet() {
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<small style="font-size: 9px;">Working...</small><span style="font-size: 18px;">⏳</span>';
+
+            try {
+                const response = await fetch('/api/boost-internet', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Build detailed message
+                    let message = data.message + '\n\n';
+
+                    if (data.issues && data.issues.length > 0) {
+                        message += '🔍 Issues Found:\n';
+                        data.issues.forEach(issue => {
+                            message += '  • ' + issue + '\n';
+                        });
+                        message += '\n';
+                    }
+
+                    if (data.fixes && data.fixes.length > 0) {
+                        message += '✅ Fixes Applied:\n';
+                        data.fixes.forEach(fix => {
+                            message += '  • ' + fix + '\n';
+                        });
+                    }
+
+                    alert(message);
+
+                    // Reload current view
+                    const activeTab = document.querySelector('.tab-content.active');
+                    if (activeTab.id === 'devices-tab') {
+                        loadDevices();
+                    } else if (activeTab.id === 'usage-tab') {
+                        loadDataUsage();
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error boosting internet: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // Data Usage Functions
+        let currentSortColumn = 'usage'; // Default sort by usage
+        let currentSortDirection = 'desc'; // Highest usage first
+        let cachedUsageData = null; // Store fetched data
+        let isLoadingUsage = false; // Prevent duplicate calls
+        let usageAbortController = null; // For canceling requests
+
+        function sortDevices(devices, column, direction) {
+            return devices.sort((a, b) => {
+                let valA, valB;
+
+                if (column === 'device') {
+                    valA = (a.custom_name || a.hostname).toLowerCase();
+                    valB = (b.custom_name || b.hostname).toLowerCase();
+                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else if (column === 'usage') {
+                    valA = a.bytes || 0;
+                    valB = b.bytes || 0;
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+                return 0;
+            });
+        }
+
+        function changeSortColumn(column) {
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = column === 'usage' ? 'desc' : 'asc';
+            }
+            // Just re-render with cached data (no API call)
+            if (cachedUsageData) {
+                renderUsageData(cachedUsageData);
+            }
+        }
+
+        function renderUsageData(data) {
+            document.getElementById('current-month').textContent = data.month;
+
+            // Calculate total usage
+            const totalBytes = data.devices.reduce((sum, device) => sum + (device.bytes || 0), 0);
+            let totalUsageText = '0 B';
+            if (totalBytes >= 1073741824) {
+                totalUsageText = (totalBytes / 1073741824).toFixed(2) + ' GB';
+            } else if (totalBytes >= 1048576) {
+                totalUsageText = (totalBytes / 1048576).toFixed(2) + ' MB';
+            } else if (totalBytes >= 1024) {
+                totalUsageText = (totalBytes / 1024).toFixed(2) + ' KB';
+            } else if (totalBytes > 0) {
+                totalUsageText = totalBytes + ' B';
+            }
+            document.getElementById('total-usage').textContent = totalUsageText;
+
+            const container = document.getElementById('usage-container');
+
+            if (!data.devices || data.devices.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No devices connected</h3><p>Data usage will appear when devices connect.</p></div>';
+                document.getElementById('total-usage').textContent = '0 B';
+                return;
+            }
+
+            // Apply sorting
+            sortDevices(data.devices, currentSortColumn, currentSortDirection);
+
+            const deviceArrow = currentSortColumn === 'device' ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '';
+            const usageArrow = currentSortColumn === 'usage' ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '';
+
+            let html = '<div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+            html += '<table style="width: 100%; border-collapse: collapse;"><thead>';
+            html += '<tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">';
+            html += '<th onclick="changeSortColumn(\'device\')" style="padding: 16px; text-align: left; font-weight: 600; cursor: pointer; user-select: none;">📱 Device' + deviceArrow + '</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600;">🌐 IP Address</th>';
+            html += '<th onclick="changeSortColumn(\'usage\')" style="padding: 16px; text-align: center; font-weight: 600; cursor: pointer; user-select: none;">📊 Data Usage' + usageArrow + '</th>';
+            html += '<th style="padding: 16px; text-align: center; font-weight: 600;">⚙️ Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            data.devices.forEach((device, index) => {
+                const deviceName = device.custom_name || device.hostname;
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                const isOffline = device.status === 'offline';
+                const opacity = isOffline ? 'opacity: 0.6;' : '';
+                const statusBadge = isOffline
+                    ? '<span style="background: #cbd5e0; color: #2d3748; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px;">OFFLINE</span>'
+                    : '<span style="background: #48bb78; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px;">●</span>';
+
+                html += '<tr style="background: ' + bgColor + '; border-bottom: 1px solid #e9ecef; transition: all 0.3s; ' + opacity + '" onmouseover="this.style.background=\'#e3f2fd\'" onmouseout="this.style.background=\'' + bgColor + '\'">';
+                html += '<td style="padding: 20px;"><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px;">' + deviceName.charAt(0).toUpperCase() + '</div><div><strong style="font-size: 16px; color: #2d3748;">' + deviceName + statusBadge + '</strong><br><small style="color: #718096; font-size: 12px;">MAC: ' + device.mac + '</small></div></div></td>';
+                html += '<td style="padding: 20px;"><span style="font-family: monospace; background: #e8eaf6; padding: 6px 12px; border-radius: 6px; color: #5e35b1; font-weight: 500;">' + device.ip + '</span></td>';
+                html += '<td style="padding: 20px; text-align: center;"><div style="display: inline-block; background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); padding: 12px 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(132, 250, 176, 0.3);"><strong style="color: #1a365d; font-size: 24px; font-weight: 700;">' + device.usage + '</strong></div></td>';
+                html += '<td style="padding: 20px; text-align: center;"><button class="btn btn-secondary" onclick="resetDeviceUsage(\'' + device.mac + '\')" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s;">🔄 Reset</button></td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        async function loadDataUsage() {
+            // Prevent duplicate calls
+            if (isLoadingUsage) {
+                return;
+            }
+
+            try {
+                isLoadingUsage = true;
+
+                // Cancel previous request if exists
+                if (usageAbortController) {
+                    usageAbortController.abort();
+                }
+
+                // Create new abort controller with 20 second timeout
+                usageAbortController = new AbortController();
+                const timeoutId = setTimeout(() => usageAbortController.abort(), 20000);
+
+                const response = await fetch('/api/data-usage', {
+                    signal: usageAbortController.signal
+                });
+
+                clearTimeout(timeoutId);
+                const data = await response.json();
+
+                // Cache the data
+                cachedUsageData = data;
+
+                // Render the data
+                renderUsageData(data);
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Request timeout or canceled, retrying...');
+                    isLoadingUsage = false;
+                    loadDataUsage(); // Retry
+                } else {
+                    console.error('Error loading data usage:', error);
+                }
+            } finally {
+                isLoadingUsage = false;
+            }
+        }
+
+        function resetAllUsage() {
+            if (confirm('Reset data usage for ALL devices?')) {
+                fetch('/api/reset-usage-all', {method: 'POST'})
+                    .then(() => {
+                        showAlert('success', 'All usage data reset');
+                        loadDataUsage();
+                    });
+            }
+        }
+
+        function resetDeviceUsage(mac) {
+            if (confirm('Reset data usage for this device?')) {
+                fetch('/api/reset-usage/' + mac, {method: 'POST'})
+                    .then(() => {
+                        showAlert('success', 'Device usage reset');
+                        loadDataUsage();
+                    });
+            }
+        }
+
+        // Auto-refresh data usage every 5 seconds when on usage tab
+        setInterval(() => {
+            const usageTab = document.getElementById('usage-tab');
+            if (usageTab && usageTab.classList.contains('active')) {
+                loadDataUsage();
+            }
+        }, 5000);
+    </script>
+
+    <!-- Edit Device Modal -->
+    <div id="edit-device-modal" class="modal">
+        <div class="modal-content">
+            <h2>✏️ Edit Device Information</h2>
+            <form id="edit-device-form">
+                <div class="form-group">
+                    <label for="device-mac">MAC Address</label>
+                    <input type="text" id="device-mac" readonly style="background: #f7fafc; cursor: not-allowed;">
+                    <small>MAC address cannot be changed</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="device-name">Custom Name</label>
+                    <input type="text" id="device-name" placeholder="e.g., John's iPhone, Living Room TV">
+                    <small>Give this device a friendly name</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="device-notes">Notes</label>
+                    <textarea id="device-notes" placeholder="Add any notes about this device..."></textarea>
+                    <small>Optional notes or description</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request Details Modal -->
+    <div id="request-details-modal" class="modal" onclick="if(event.target === this) closeRequestDetailsModal()">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">🔍 Request Details</h2>
+                <button onclick="closeRequestDetailsModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #718096; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div id="request-details-content"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-secondary" onclick="closeRequestDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Block Modal -->
+    <div id="advanced-block-modal" class="modal" onclick="if(event.target === this) closeAdvancedBlockModal()">
+        <div class="modal-content">
+            <h2>🚫 Advanced Blocking</h2>
+            <form id="advanced-block-form" onsubmit="submitAdvancedBlock(event)">
+                <div class="form-group">
+                    <label for="adv-domain">Domain Name</label>
+                    <input type="text" id="adv-domain" placeholder="facebook.com" required>
+                    <small>The domain to block</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="adv-ip-ranges">IP Addresses / Ranges (one per line)</label>
+                    <textarea id="adv-ip-ranges" rows="8" placeholder="157.240.0.0/16&#10;31.13.0.0/16&#10;66.220.144.0/20&#10;OR single IPs:&#10;157.240.13.35"></textarea>
+                    <small>Enter IP ranges in CIDR notation (e.g., 157.240.0.0/16) or single IPs. One per line. Leave empty to auto-resolve.</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdvancedBlockModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Block Domain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Block Modal -->
+    <div id="edit-block-modal" class="modal" onclick="if(event.target === this) closeEditBlockModal()">
+        <div class="modal-content">
+            <h2>✏️ Edit Blocked Domain</h2>
+            <form id="edit-block-form" onsubmit="submitEditBlock(event)">
+                <input type="hidden" id="edit-domain-name">
+
+                <div class="form-group">
+                    <label>Domain</label>
+                    <input type="text" id="edit-domain-display" readonly style="background: #f7fafc; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-ip-ranges">IP Addresses / Ranges (one per line)</label>
+                    <textarea id="edit-ip-ranges" rows="10" placeholder="157.240.0.0/16&#10;31.13.0.0/16"></textarea>
+                    <small>Modify IP ranges or add new ones. One per line.</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditBlockModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

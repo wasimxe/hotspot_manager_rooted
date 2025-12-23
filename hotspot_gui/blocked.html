@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Blocked</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .blocked-container {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .blocked-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .blocked-icon::before {
+            content: '🚫';
+            font-size: 60px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .blocked-url {
+            background: #f7fafc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            word-break: break-all;
+            color: #718096;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .message {
+            color: #4a5568;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .owner-section {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .owner-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: #25D366;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 10px;
+        }
+
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+
+        .whatsapp-icon {
+            width: 30px;
+            height: 30px;
+            background: #25D366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .info-box {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            color: #c53030;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style-position: inside;
+            color: #742a2a;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .blocked-container {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .message {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-container">
+        <div class="blocked-icon"></div>
+
+        <h1>Website Blocked</h1>
+
+        <p class="message">
+            This website has been blocked by the network owner.
+        </p>
+
+        <div class="blocked-url" id="blocked-url">
+            <script>
+                // Try to get the originally requested URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const blockedDomain = urlParams.get('url') || 'This website';
+                document.getElementById('blocked-url').textContent = blockedDomain;
+            </script>
+        </div>
+
+        <div class="owner-section">
+            <h2>📱 Need Access?</h2>
+            <p style="margin-bottom: 15px;">Contact the network owner to request unblocking</p>
+            <a href="https://wa.me/923455407008?text=Hi,%20I%20need%20access%20to%20a%20blocked%20website"
+               class="whatsapp-btn"
+               target="_blank">
+                <div class="whatsapp-icon">💬</div>
+                Contact on WhatsApp
+            </a>
+            <p style="margin-top: 15px; font-size: 14px; opacity: 0.9;">
+                WhatsApp: +92 345 5407008
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h3>Why was this blocked?</h3>
+            <ul>
+                <li>Content may be inappropriate or restricted</li>
+                <li>Network policy enforcement</li>
+                <li>Bandwidth management</li>
+                <li>Security or malware protection</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>🔒 Protected by Hotspot Manager</p>
+            <p style="margin-top: 5px; font-size: 12px;">
+                If you believe this is an error, please contact the network owner
+            </p>
+        </div>
+    </div>
+</body>
+</html>

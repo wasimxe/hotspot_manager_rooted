@@ -1,0 +1,47 @@
+{
+  "name": "Hotspot Manager",
+  "short_name": "Hotspot",
+  "description": "Manage your mobile hotspot, monitor connected devices, and block URLs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "networking"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "View Devices",
+      "short_name": "Devices",
+      "description": "View connected hotspot devices",
+      "url": "/?tab=devices"
+    },
+    {
+      "name": "Block URLs",
+      "short_name": "Block",
+      "description": "Block websites for hotspot users",
+      "url": "/?tab=urls"
+    },
+    {
+      "name": "Optimize",
+      "short_name": "Optimize",
+      "description": "Optimize hotspot performance",
+      "url": "/?tab=optimize"
+    }
+  ],
+  "prefer_related_applications": false
+}
