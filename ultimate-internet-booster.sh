@@ -247,6 +247,38 @@ FIXES=$((FIXES + 1))
 log "✓ Enabled ECN"
 
 # ============================================
+# BOOST 13: Expand Port Range (Critical for Multiple Devices!)
+# ============================================
+log "Expanding outgoing port range for better multi-device support..."
+su -c "sysctl -w net.ipv4.ip_local_port_range='15000 65000'" 2>/dev/null
+FIXES=$((FIXES + 1))
+log "✓ Expanded port range (13k→50k ports)"
+
+# ============================================
+# BOOST 14: Disable Slow Start After Idle (Keep Speed High)
+# ============================================
+log "Disabling slow start after idle for burst traffic..."
+su -c "sysctl -w net.ipv4.tcp_slow_start_after_idle=0" 2>/dev/null
+FIXES=$((FIXES + 1))
+log "✓ Disabled slow start after idle"
+
+# ============================================
+# BOOST 15: Increase TCP Output Bytes (Better Throughput)
+# ============================================
+log "Increasing TCP output bytes for higher throughput..."
+su -c "sysctl -w net.ipv4.tcp_limit_output_bytes=524288" 2>/dev/null
+FIXES=$((FIXES + 1))
+log "✓ Increased output bytes to 512KB"
+
+# ============================================
+# BOOST 16: Increase SYN Backlog (More Simultaneous Connections)
+# ============================================
+log "Increasing SYN backlog for better connection handling..."
+su -c "sysctl -w net.ipv4.tcp_max_syn_backlog=4096" 2>/dev/null
+FIXES=$((FIXES + 1))
+log "✓ Increased SYN backlog to 4096"
+
+# ============================================
 # Save Settings for Persistence
 # ============================================
 log "Saving settings for boot persistence..."
@@ -282,6 +314,10 @@ net.ipv4.tcp_mtu_probing=1
 net.ipv4.tcp_tw_reuse=1
 net.ipv4.tcp_fin_timeout=15
 net.ipv4.tcp_ecn=1
+net.ipv4.ip_local_port_range=15000 65000
+net.ipv4.tcp_slow_start_after_idle=0
+net.ipv4.tcp_limit_output_bytes=524288
+net.ipv4.tcp_max_syn_backlog=4096
 EOF
 
 log "========================================="
