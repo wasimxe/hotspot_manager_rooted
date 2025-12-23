@@ -75,8 +75,9 @@ apply_settings() {
     fi
 
     if [ $CHANGED -eq 1 ]; then
-        log "✓ Settings corrected in config file"
-        restart_hotspot
+        log "✓ Settings corrected in config file (will apply on next hotspot restart)"
+        # DO NOT auto-restart hotspot - prevents disconnections!
+        # Settings will apply automatically on next manual restart or mobile reboot
     fi
 }
 
