@@ -13,6 +13,25 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $@" | tee -a "$LOG_FILE"
 }
 
+restart_hotspot() {
+    log "Restarting hotspot to apply changes..."
+
+    # Method 1: Try using svc command (most reliable)
+    if su -c "svc wifi disable" 2>/dev/null && sleep 2 && su -c "svc wifi enable" 2>/dev/null; then
+        log "✓ Hotspot restarted via svc command"
+        return 0
+    fi
+
+    # Method 2: Try killing and restarting hostapd
+    if su -c "killall hostapd" 2>/dev/null && sleep 2; then
+        log "✓ Hotspot restarted via hostapd kill"
+        return 0
+    fi
+
+    log "⚠ Could not restart hotspot automatically - please restart manually"
+    return 1
+}
+
 apply_settings() {
     # Read user preferences from JSON
     if [ ! -f "$CONFIG_FILE" ]; then
@@ -56,7 +75,8 @@ apply_settings() {
     fi
 
     if [ $CHANGED -eq 1 ]; then
-        log "✓ Settings corrected! Note: Restart hotspot to apply changes"
+        log "✓ Settings corrected in config file"
+        restart_hotspot
     fi
 }
 

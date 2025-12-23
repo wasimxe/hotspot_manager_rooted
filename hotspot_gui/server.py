@@ -1729,14 +1729,16 @@ class HotspotHandler(BaseHTTPRequestHandler):
                 processed_macs.add(mac)
 
                 # Ensure counting rules exist for this MAC (both directions)
-                # FIXED: Check return code, not stdout
-                _, code_in = self._run_command(f"su -c 'iptables -C FORWARD -d {ip} -m mac --mac-source {mac} 2>/dev/null'")
-                if code_in != 0:
-                    self._run_command(f"su -c 'iptables -I FORWARD -d {ip} -m mac --mac-source {mac}'")
-
+                # FIXED: Incoming traffic doesn't have client MAC as source!
+                # Outgoing: Match source IP + source MAC (client sending data)
                 _, code_out = self._run_command(f"su -c 'iptables -C FORWARD -s {ip} -m mac --mac-source {mac} 2>/dev/null'")
                 if code_out != 0:
                     self._run_command(f"su -c 'iptables -I FORWARD -s {ip} -m mac --mac-source {mac}'")
+
+                # Incoming: Match destination IP only (return traffic has router's source MAC, not client's!)
+                _, code_in = self._run_command(f"su -c 'iptables -C FORWARD -d {ip} 2>/dev/null'")
+                if code_in != 0:
+                    self._run_command(f"su -c 'iptables -I FORWARD -d {ip}'")
 
                 # Get byte counters for this device
                 result_in, _ = self._run_command(f"su -c 'iptables -L FORWARD -v -n -x 2>/dev/null | grep -w {ip} | grep -v \"0     0\"'")
@@ -1748,17 +1750,19 @@ class HotspotHandler(BaseHTTPRequestHandler):
                 if result_in:
                     for line in result_in.strip().split('\n'):
                         parts = line.split()
-                        if len(parts) > 1:
+                        # iptables format: pkts bytes target prot opt in out source destination [MAC MAC_ADDR]
+                        if len(parts) >= 8:
                             try:
                                 bytes_val = int(parts[1])
-                                # Check direction based on source/destination
-                                if f' {ip} ' in line:
-                                    if parts.index(ip) > 0:
-                                        idx = parts.index(ip)
-                                        if idx >= 7:
-                                            bytes_in += bytes_val
-                                        else:
-                                            bytes_out += bytes_val
+                                source_ip = parts[6]  # Column 7: source IP
+                                dest_ip = parts[7]     # Column 8: destination IP
+
+                                # Incoming: destination is this device
+                                if dest_ip == ip or dest_ip.startswith(ip + '/'):
+                                    bytes_in += bytes_val
+                                # Outgoing: source is this device
+                                elif source_ip == ip or source_ip.startswith(ip + '/'):
+                                    bytes_out += bytes_val
                             except (ValueError, IndexError):
                                 pass
 
